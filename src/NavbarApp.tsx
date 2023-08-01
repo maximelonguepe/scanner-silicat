@@ -1,7 +1,8 @@
 import {Nav, Navbar, Container, Button} from "react-bootstrap";
+import {Link} from "react-router-dom";
 
 const NavbarApp = () => {
-    return(
+    return (
         <>
 
             <Navbar bg="dark" variant="dark" expand="lg" fixed="top">
@@ -14,9 +15,11 @@ const NavbarApp = () => {
                     <Navbar.Collapse id="responsive-navbar-nav">
                         <Nav className="ms-auto d-flex">
                             <Nav.Item id="my-events" className="d-flex mb-2 me-2 mb-lg-0">
-                                <Button>
-                                    Génerer code barre
-                                </Button>
+                                <Link to='/'>
+                                    <Button>
+                                        Génerer code barre
+                                    </Button>
+                                </Link>
                             </Nav.Item>
                         </Nav>
                     </Navbar.Collapse>

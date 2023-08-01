@@ -43,7 +43,7 @@ const Generatecodebarre = () => {
                     <Form.Group as={Row}>
                         <Col>
                             <Form.Label>
-                                Valeur a generer
+                                Code de référence produit
                             </Form.Label>
                         </Col>
                         <Col>
