@@ -17,7 +17,7 @@ const NavbarApp = () => {
                             <Nav.Item id="my-events" className="d-flex mb-2 me-2 mb-lg-0">
                                 <Link to='/'>
                                     <Button>
-                                        Génerer code barre
+                                        Accueil
                                     </Button>
                                 </Link>
                             </Nav.Item>

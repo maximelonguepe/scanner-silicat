@@ -2,15 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Table,Button } from "react-bootstrap";
 import Barcode from "react-barcode";
 import {Link} from "react-router-dom";
-
-interface Objet {
-    id: number;
-    referenceProduit: string;
-    type: string;
-    quantiteOuMl:number;
-    prixUnitaire:number;
-    // Ajoutez d'autres propriétés si nécessaire
-}
+import {Objet} from "./types";
 const ListeObjets = () => {
     const [objets, setObjets] = useState<Objet[]>([]);
     const fetchObjets = async () => {
