@@ -23,4 +23,11 @@ export interface Profil {
     prixMetreLineaire: number;
     quantiteOuMl: number;
     prixUnitaire: number;
+    couleurs: Couleur[];
+}
+
+export interface Couleur{
+    id:number;
+    nomCouleur:string;
+    metreLineaire:number;
 }

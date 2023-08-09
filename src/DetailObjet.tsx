@@ -1,6 +1,6 @@
 import {useLocation} from "react-router-dom";
 import React, {useEffect, useRef, useState} from "react";
-import {Consommable, Objet, Profil} from "./types";
+import {Consommable, Couleur, Objet, Profil} from "./types";
 import {Button, Col, FormControl, FormGroup, Row} from "react-bootstrap";
 import Barcode from "react-barcode";
 import html2canvas from "html2canvas";
@@ -301,6 +301,36 @@ const DetailObjet = () => {
                             <Barcode value={profil.id.toString()} format="CODE39"/>
                         </Col>
                     </Row>
+                    <Row>
+                        <Col>
+                            Couleurs et tailles :
+                        </Col>
+                    </Row>
+                        {profil.couleurs.map(
+                            (item) => (
+                                <>
+                                    <Row>
+                                        <Col>
+                                            Nom couleur :
+
+                                        </Col>
+                                        <Col>
+                                            {item.nomCouleur}
+                                        </Col>
+
+                                    </Row>
+                                    <Row>
+                                        <Col>
+                                            Metres linéaires :
+
+                                        </Col>
+                                        <Col>
+                                            {item.metreLineaire}
+                                        </Col>
+                                    </Row>
+                                </>
+                            )
+                        )}
 
                 </>
             )
