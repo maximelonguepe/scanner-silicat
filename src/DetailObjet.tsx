@@ -11,12 +11,15 @@ const DetailObjet = () => {
     const [error, setError] = useState<string | null>(null);
     const [consommable, setConsommable] = useState<Consommable | null>(null);
     const [profil, setProfil] = useState<Profil | null>(null)
-    const qrCodeRef = useRef(null);
-
+    const [isEditingColors, setIsEditingColors] = useState(false);
     const [editingPUConsommable, setEditingPUConsommable] = useState(false);
-    const [editingReferenceConsommable, setEditingReferenceConsommable] = useState(false);
+    const [editingReference, setEditingReference] = useState(false);
     const [editingQuantiteConsommable, setEditingQuantiteConsommable] = useState(false);
-
+    const [couleurToBeEdited, setCouleurToBeEdited] = useState<Couleur>({
+        id: null,
+        nomCouleur: "",
+        metreLineaire: 0,
+    });
     const fetchObjet = async (id: string) => {
         try {
             const response = await fetch(`http://localhost:8080/api/objets/get?id=${id}`);
@@ -29,7 +32,9 @@ const DetailObjet = () => {
             setLoading(false);
         }
     };
-
+    useEffect(() => {
+        console.log("Profil up to date :", profil);
+    }, [profil]);
     const fetchConsommable = async (id: string) => {
         try {
             const response = await fetch(`http://localhost:8080/api/consommables/get?id=${id}`);
@@ -47,7 +52,7 @@ const DetailObjet = () => {
         try {
             const response = await fetch(`http://localhost:8080/api/profils/get?id=${id}`);
             const jsonData = await response.json();
-
+            console.log('fetch')
             setProfil(jsonData);
             setLoading(false);
         } catch (error) {
@@ -61,7 +66,7 @@ const DetailObjet = () => {
         if (barcodeDiv) {
             html2canvas(barcodeDiv).then((canvas) => {
                 const link = document.createElement('a');
-                link.download = 'barcode'+objet?.id+'.png';
+                link.download = 'barcode' + objet?.id + '.png';
                 link.href = canvas.toDataURL('image/png').replace('image/png', 'image/octet-stream');
                 link.click();
             });
@@ -91,6 +96,50 @@ const DetailObjet = () => {
     };
 
 
+    const updateProfil = async () => {
+        try {
+            // Mettez à jour les propriétés nécessaires de l'objet
+            let updatedProfil=null;
+            if (profil){
+                updatedProfil= {
+                    ...profil,
+                    couleurs: [
+                        ...profil.couleurs,
+                        couleurToBeEdited
+                    ]
+                };
+            }
+
+            console.log('old value');
+            const response = await fetch('http://localhost:8080/api/profils', {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(updatedProfil),
+            });
+
+            if (response.ok) {
+                console.log('Objet mis à jour avec succès.');
+                if(objet){
+                    fetchProfil(objet.id.toString());
+                    renderDetails();
+                }
+                // Vous pouvez appeler fetchData() pour récupérer les données mises à jour après le PUT
+            } else {
+                console.error('Erreur lors de la mise à jour de l\'objet.');
+            }
+        } catch (error) {
+            console.error('Erreur lors de la mise à jour:', error);
+        }
+    };
+
+    function saveColor(){
+        addingColorInArray();
+        updateProfil();
+        setIsEditingColors(false);
+    }
+
     const location = useLocation();
     const queryParams = new URLSearchParams(location.search);
     const id = queryParams.get('id');
@@ -103,6 +152,30 @@ const DetailObjet = () => {
     const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         const {name, value} = event.target;
         setConsommable((prevObject) => ({
+            ...prevObject!,
+            [name]: value
+        }));
+    };
+    const addingColorInArray = () => {
+        setProfil((prevProfil) => {
+            if (prevProfil) {
+                return {
+                    ...prevProfil!,
+                    couleurs: [
+                        ...prevProfil.couleurs!,
+                        couleurToBeEdited
+                    ]
+                };
+            }
+            return prevProfil; // Renvoie null ou le profil inchangé en fonction de votre logique
+        });
+    };
+
+
+
+    const handleInputChangeNewColor = (event: React.ChangeEvent<HTMLInputElement>) => {
+        const {name, value} = event.target;
+        setCouleurToBeEdited((prevObject) => ({
             ...prevObject!,
             [name]: value
         }));
@@ -121,7 +194,7 @@ const DetailObjet = () => {
 
 
     const handleInputConsommableRefBlur = () => {
-        setEditingReferenceConsommable(false);
+        setEditingReference(false);
     };
 
     const handleInputConsommablePUBlur = () => {
@@ -132,7 +205,7 @@ const DetailObjet = () => {
         setEditingQuantiteConsommable(false);
     };
     const handleEditClickConsommableRef = () => {
-        setEditingReferenceConsommable(true);
+        setEditingReference(true);
     };
 
     const handleEditClickConsommablePU = () => {
@@ -149,163 +222,168 @@ const DetailObjet = () => {
         }
     }
 
-    return (
-        <>
-            <br/>
-            <br/>
-            <br/>
-            {loading && <p>Chargement en cours...</p>}
-            {error && <p>{error}</p>}
-            {consommable && (
-                <>
-                    <Row>
+    function editColors() {
+        setIsEditingColors(true);
+    }
 
-                    </Row>
-                    <Row>
-                        <Col>
-                            Référence :
-                        </Col>
-                        <Col>
+    const renderDetails = () => {
+        return (
+            <>
+                <br/>
+                <br/>
+                <br/>
+                {loading && <p>Chargement en cours...</p>}
+                {error && <p>{error}</p>}
+                {consommable && (
+                    <>
+                        <Row>
 
-
-                            {
-                                editingReferenceConsommable ? (
-
-                                    <FormControl
-                                        type="text"
-                                        name="referenceProduit"
-                                        value={consommable.referenceProduit}
-                                        onChange={handleInputChange}
-                                        onBlur={handleInputConsommableRefBlur}
-                                        autoFocus
-                                    />
-                                ) : (
-                                    <span>{consommable.referenceProduit}</span>
-
-                                )
-                            }
-                        </Col>
-                        <Col>
-                            <Button onClick={handleEditClickConsommableRef} variant="primary">
-                                Modifier
-                            </Button>
-                        </Col>
-                    </Row>
-                    <Row>
-                        <Col>
-                            Prix unitaire :
-                        </Col>
-                        <Col>
-                            {
-                                editingPUConsommable ? (
-                                    <>
-                                        <FormControl
-                                            type="text"
-                                            name="prixUnitaire"
-                                            value={consommable.prixUnitaire}
-                                            onChange={handleInputChange}
-                                            onBlur={handleInputConsommablePUBlur}
-                                            autoFocus
-                                        />
-                                    </>
-                                ) : (
-                                    <span>{consommable.prixUnitaire}</span>
-
-                                )
-                            }
-
-                            €
-                        </Col>
-                        <Col>
-                            <Button onClick={handleEditClickConsommablePU} variant="primary">
-                                Modifier
-                            </Button>
-                        </Col>
-                    </Row>
-                    <Row>
-                        <Col>
-                            Quantité :
-                        </Col>
-                        <Col>
-                            {
-                                editingQuantiteConsommable ?
-                                    (<>
-                                        <FormControl
-                                            type="text"
-                                            name="quantiteOuMl"
-                                            value={consommable.quantiteOuMl}
-                                            onChange={handleInputChange}
-                                            onBlur={handleInputConsommableQuantiteBlur}
-                                            autoFocus
-                                        />
-                                    </>) : <span> {consommable.quantiteOuMl}</span>
-                            }
-                        </Col>
-                        <Col>
-                            <Button onClick={handleEditClickConsommableQuantite} variant="primary">
-                                Modifier
-                            </Button>
-                        </Col>
-                    </Row>
-                    <Row>
+                        </Row>
                         <Row>
                             <Col>
-                                Sous total :
+                                Référence :
                             </Col>
                             <Col>
+
+
+                                {
+                                    editingReference ? (
+
+                                        <FormControl
+                                            type="text"
+                                            name="referenceProduit"
+                                            value={consommable.referenceProduit}
+                                            onChange={handleInputChange}
+                                            onBlur={handleInputConsommableRefBlur}
+                                            autoFocus
+                                        />
+                                    ) : (
+                                        <span>{consommable.referenceProduit}</span>
+
+                                    )
+                                }
+                            </Col>
+                            <Col>
+                                <Button onClick={handleEditClickConsommableRef} variant="primary">
+                                    Modifier
+                                </Button>
+                            </Col>
+                        </Row>
+                        <Row>
+                            <Col>
+                                Prix unitaire :
+                            </Col>
+                            <Col>
+                                {
+                                    editingPUConsommable ? (
+                                        <>
+                                            <FormControl
+                                                type="text"
+                                                name="prixUnitaire"
+                                                value={consommable.prixUnitaire}
+                                                onChange={handleInputChange}
+                                                onBlur={handleInputConsommablePUBlur}
+                                                autoFocus
+                                            />
+                                        </>
+                                    ) : (
+                                        <span>{consommable.prixUnitaire}</span>
+
+                                    )
+                                }
+
+                                €
+                            </Col>
+                            <Col>
+                                <Button onClick={handleEditClickConsommablePU} variant="primary">
+                                    Modifier
+                                </Button>
+                            </Col>
+                        </Row>
+                        <Row>
+                            <Col>
+                                Quantité :
+                            </Col>
+                            <Col>
+                                {
+                                    editingQuantiteConsommable ?
+                                        (<>
+                                            <FormControl
+                                                type="text"
+                                                name="quantiteOuMl"
+                                                value={consommable.quantiteOuMl}
+                                                onChange={handleInputChange}
+                                                onBlur={handleInputConsommableQuantiteBlur}
+                                                autoFocus
+                                            />
+                                        </>) : <span> {consommable.quantiteOuMl}</span>
+                                }
+                            </Col>
+                            <Col>
+                                <Button onClick={handleEditClickConsommableQuantite} variant="primary">
+                                    Modifier
+                                </Button>
+                            </Col>
+                        </Row>
+                        <Row>
+                            <Row>
+                                <Col>
+                                    Sous total :
+                                </Col>
+                                <Col>
                                 <span>
                                 {consommable.quantiteOuMl * consommable.prixUnitaire}
                                 </span>
-                                €
+                                    €
+                                </Col>
+                            </Row>
+                        </Row>
+                        <Row>
+                            <Col>
+                                Code barre:
+
+                            </Col>
+                            <Col>
+                                <div id='barcode'>
+                                    <Barcode value={consommable.id.toString()} format="CODE39"/>
+
+                                </div>
+
+                            </Col>
+                            <Col>
+                                <Button onClick={handleDownloadClick}>
+                                    Télécharger
+                                </Button>
                             </Col>
                         </Row>
-                    </Row>
-                    <Row>
-                        <Col>
-                            Code barre:
+                        <Row>
+                            <Button onClick={handleSaveModif}>Sauvegarder Modifications</Button>
+                        </Row>
 
-                        </Col>
-                        <Col>
-                        <div id='barcode'>
-                            <Barcode value={consommable.id.toString()} format="CODE39"/>
+                    </>
+                )}
+                {profil && (
+                    <>
+                        <Row>
+                            <Col>
 
-                        </div>
+                                Référence : <span>{profil.referenceProduit}</span>
+                            </Col>
+                        </Row>
+                        <Row>
+                            <Col>
+                                Qr code :
 
-                        </Col>
-                        <Col>
-                            <Button onClick={handleDownloadClick}>
-                                Télécharger
-                            </Button>
-                        </Col>
-                    </Row>
-                    <Row>
-                        <Button onClick={handleSaveModif}>Sauvegarder Modifications</Button>
-                    </Row>
-
-                </>
-            )}
-            {profil && (
-                <>
-                    <Row>
-                        <Col>
-
-                            Référence : <span>{profil.referenceProduit}</span>
-                        </Col>
-                    </Row>
-                    <Row>
-                        <Col>
-                            Qr code :
-
-                        </Col>
-                        <Col>
-                            <Barcode value={profil.id.toString()} format="CODE39"/>
-                        </Col>
-                    </Row>
-                    <Row>
-                        <Col>
-                            Couleurs et tailles :
-                        </Col>
-                    </Row>
+                            </Col>
+                            <Col>
+                                <Barcode value={profil.id.toString()} format="CODE39"/>
+                            </Col>
+                        </Row>
+                        <Row>
+                            <Col>
+                                Couleurs et tailles :
+                            </Col>
+                        </Row>
                         {profil.couleurs.map(
                             (item) => (
                                 <>
@@ -331,14 +409,68 @@ const DetailObjet = () => {
                                 </>
                             )
                         )}
+                        <br/>
+                        <br/>
 
-                </>
-            )
-            }
+                        <Row>
+                            {
+                                isEditingColors ? (
+                                    <>
+                                        <Row>
+                                            <Col>
+                                                Nom couleur
+                                            </Col>
+                                            <Col>
+                                                <FormControl
+                                                    type="text"
+                                                    name="nomCouleur"
+                                                    value={couleurToBeEdited.nomCouleur}
+                                                    onChange={handleInputChangeNewColor}
+                                                    autoFocus
+                                                />
+                                            </Col>
+                                        </Row>
+                                        <Row>
+                                            <Col>
+                                                Nombre de metres linéaires
+                                            </Col>
+                                            <Col>
+                                                <FormControl
+                                                    type="text"
+                                                    name="metreLineaire"
+                                                    value={couleurToBeEdited.metreLineaire}
+                                                    onChange={handleInputChangeNewColor}
+                                                    autoFocus
+                                                />
+                                            </Col>
+                                        </Row>
+                                        <Row>
+                                            <Button onClick={saveColor}>Sauvegarder</Button>
+                                        </Row>
+                                    </>
+
+                                ) : (
+                                    <>
+                                        <Col>
+                                            <Button onClick={editColors}>
+                                                Ajouter une couleur
+                                            </Button>
+                                        </Col>
+                                    </>
+                                )
+                            }
+
+                        </Row>
+
+                    </>
+                )
+                }
 
 
-        </>
-    );
+            </>
+        );
+    };
+    return(renderDetails())
 };
 
 export default DetailObjet;

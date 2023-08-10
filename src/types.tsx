@@ -27,7 +27,7 @@ export interface Profil {
 }
 
 export interface Couleur{
-    id:number;
+    id:number|null;
     nomCouleur:string;
     metreLineaire:number;
 }
