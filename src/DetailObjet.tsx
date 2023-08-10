@@ -1,7 +1,7 @@
 import {useLocation} from "react-router-dom";
 import React, {useEffect, useRef, useState} from "react";
 import {Consommable, Couleur, Objet, Profil} from "./types";
-import {Button, Col, FormControl, FormGroup, Row} from "react-bootstrap";
+import {Button, Col, FormControl, FormGroup, Row, Table} from "react-bootstrap";
 import Barcode from "react-barcode";
 import html2canvas from "html2canvas";
 
@@ -12,9 +12,9 @@ const DetailObjet = () => {
     const [consommable, setConsommable] = useState<Consommable | null>(null);
     const [profil, setProfil] = useState<Profil | null>(null)
     const [isEditingColors, setIsEditingColors] = useState(false);
-    const [editingPUConsommable, setEditingPUConsommable] = useState(false);
+    const [editingPU, setEditingPU] = useState(false);
     const [editingReference, setEditingReference] = useState(false);
-    const [editingQuantiteConsommable, setEditingQuantiteConsommable] = useState(false);
+    const [editingQuantite, setEditingQuantite] = useState(false);
     const [couleurToBeEdited, setCouleurToBeEdited] = useState<Couleur>({
         id: null,
         nomCouleur: "",
@@ -72,6 +72,28 @@ const DetailObjet = () => {
             });
         }
     };
+
+    const deleteCouleurFetch = async (idCouleur: number | null) => {
+        try {
+            const response = await fetch(`http://localhost:8080/api/couleurs?id=${idCouleur}`, {
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            if (response.ok) {
+                if (objet) {
+                    fetchProfil(objet?.id.toString());
+                    renderDetails();
+                }
+            } else {
+                console.error('Delete request failed');
+            }
+        } catch (error) {
+            console.error('Error deleting item:', error);
+        }
+    };
     const updateConsommable = async () => {
         try {
             // Mettez à jour les propriétés nécessaires de l'objet
@@ -99,9 +121,9 @@ const DetailObjet = () => {
     const updateProfil = async () => {
         try {
             // Mettez à jour les propriétés nécessaires de l'objet
-            let updatedProfil=null;
-            if (profil){
-                updatedProfil= {
+            let updatedProfil = null;
+            if (profil) {
+                updatedProfil = {
                     ...profil,
                     couleurs: [
                         ...profil.couleurs,
@@ -121,7 +143,7 @@ const DetailObjet = () => {
 
             if (response.ok) {
                 console.log('Objet mis à jour avec succès.');
-                if(objet){
+                if (objet) {
                     fetchProfil(objet.id.toString());
                     renderDetails();
                 }
@@ -134,7 +156,7 @@ const DetailObjet = () => {
         }
     };
 
-    function saveColor(){
+    function saveColor() {
         addingColorInArray();
         updateProfil();
         setIsEditingColors(false);
@@ -156,6 +178,15 @@ const DetailObjet = () => {
             [name]: value
         }));
     };
+
+
+    const handleInputChangeProfil = (event: React.ChangeEvent<HTMLInputElement>) => {
+        const {name, value} = event.target;
+        setProfil((prevObject) => ({
+            ...prevObject!,
+            [name]: value
+        }));
+    };
     const addingColorInArray = () => {
         setProfil((prevProfil) => {
             if (prevProfil) {
@@ -170,7 +201,6 @@ const DetailObjet = () => {
             return prevProfil; // Renvoie null ou le profil inchangé en fonction de votre logique
         });
     };
-
 
 
     const handleInputChangeNewColor = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -196,24 +226,26 @@ const DetailObjet = () => {
     const handleInputConsommableRefBlur = () => {
         setEditingReference(false);
     };
-
-    const handleInputConsommablePUBlur = () => {
-        setEditingPUConsommable(false);
+    const handleInputProfilRefBlur = () => {
+        setEditingReference(false);
+    };
+    const handleInputPUBlur = () => {
+        setEditingPU(false);
     };
 
     const handleInputConsommableQuantiteBlur = () => {
-        setEditingQuantiteConsommable(false);
+        setEditingQuantite(false);
     };
-    const handleEditClickConsommableRef = () => {
+    const handleEditClickRef = () => {
         setEditingReference(true);
     };
 
     const handleEditClickConsommablePU = () => {
-        setEditingPUConsommable(true);
+        setEditingPU(true);
     };
 
     const handleEditClickConsommableQuantite = () => {
-        setEditingQuantiteConsommable(true);
+        setEditingQuantite(true);
     };
 
     function handleSaveModif() {
@@ -226,6 +258,9 @@ const DetailObjet = () => {
         setIsEditingColors(true);
     }
 
+    const deleteCouleur = (id: number | null) => {
+        deleteCouleurFetch(id);
+    };
     const renderDetails = () => {
         return (
             <>
@@ -264,7 +299,7 @@ const DetailObjet = () => {
                                 }
                             </Col>
                             <Col>
-                                <Button onClick={handleEditClickConsommableRef} variant="primary">
+                                <Button onClick={handleEditClickRef} variant="primary">
                                     Modifier
                                 </Button>
                             </Col>
@@ -275,14 +310,14 @@ const DetailObjet = () => {
                             </Col>
                             <Col>
                                 {
-                                    editingPUConsommable ? (
+                                    editingPU ? (
                                         <>
                                             <FormControl
                                                 type="text"
                                                 name="prixUnitaire"
                                                 value={consommable.prixUnitaire}
                                                 onChange={handleInputChange}
-                                                onBlur={handleInputConsommablePUBlur}
+                                                onBlur={handleInputPUBlur}
                                                 autoFocus
                                             />
                                         </>
@@ -306,7 +341,7 @@ const DetailObjet = () => {
                             </Col>
                             <Col>
                                 {
-                                    editingQuantiteConsommable ?
+                                    editingQuantite ?
                                         (<>
                                             <FormControl
                                                 type="text"
@@ -366,8 +401,65 @@ const DetailObjet = () => {
                     <>
                         <Row>
                             <Col>
+                                Référence :
+                            </Col>
+                            <Col>
 
-                                Référence : <span>{profil.referenceProduit}</span>
+
+                                {editingReference ?
+                                    (
+                                        <FormControl
+                                            type="text"
+                                            name="referenceProduit"
+                                            value={profil.referenceProduit}
+                                            onChange={handleInputChangeProfil}
+                                            onBlur={handleInputProfilRefBlur}
+                                            autoFocus
+                                        />
+                                    ) : (
+                                        <span>{profil.referenceProduit}</span>
+
+                                    )
+                                }
+                            </Col>
+                            <Col>
+                                <Button onClick={handleEditClickRef}>Modifier</Button>
+                            </Col>
+                        </Row>
+                        <Row>
+                            <Col>
+                                Prix au metre linéaire :
+                            </Col>
+                            <Col>
+                                {
+                                    editingPU ? (
+                                        <FormControl
+                                            type="text"
+                                            name="prixUnitaire"
+                                            value={profil.prixUnitaire}
+                                            onChange={handleInputChangeProfil}
+                                            onBlur={handleInputPUBlur}
+                                            autoFocus
+                                        />
+                                    ) : (
+                                        <span>
+                                            {profil?.prixUnitaire}
+                                        </span>
+                                    )
+                                }
+                            </Col>
+                            <Col>
+                                <Button onClick={handleEditClickConsommablePU} variant="primary">
+                                    Modifier
+                                </Button>
+                            </Col>
+                        </Row>
+                        <Row>
+                            <Col>
+                                Longueur totale :
+                            </Col>
+                            <Col>
+                                <span>{profil.quantiteOuMl}</span>
                             </Col>
                         </Row>
                         <Row>
@@ -384,31 +476,46 @@ const DetailObjet = () => {
                                 Couleurs et tailles :
                             </Col>
                         </Row>
-                        {profil.couleurs.map(
-                            (item) => (
-                                <>
-                                    <Row>
-                                        <Col>
-                                            Nom couleur :
+                        {
+                            profil.couleurs.length > 0 ?
+                                (<Table striped bordered>
+                                    <thead>
+                                    <tr>
+                                        <th>Nom</th>
+                                        <th>Quantité</th>
+                                    </tr>
+                                    </thead>
 
-                                        </Col>
-                                        <Col>
-                                            {item.nomCouleur}
-                                        </Col>
+                                    {profil.couleurs.map(
+                                        (item) => (
 
-                                    </Row>
-                                    <Row>
-                                        <Col>
-                                            Metres linéaires :
+                                            <tr>
 
-                                        </Col>
-                                        <Col>
-                                            {item.metreLineaire}
-                                        </Col>
-                                    </Row>
-                                </>
-                            )
-                        )}
+                                                <td>
+
+
+                                                    {item.nomCouleur}
+
+                                                </td>
+
+
+                                                <td>
+                                                    {item.metreLineaire}
+                                                </td>
+
+                                                <td>
+                                                    <Button
+                                                            onClick={() => deleteCouleur(item.id)}>Supprimer</Button>
+                                                </td>
+
+                                            </tr>
+
+                                        )
+                                    )}
+                                </Table>) :
+                                (<></>)
+                        }
+
                         <br/>
                         <br/>
 
@@ -429,6 +536,7 @@ const DetailObjet = () => {
                                                     autoFocus
                                                 />
                                             </Col>
+
                                         </Row>
                                         <Row>
                                             <Col>
@@ -443,6 +551,7 @@ const DetailObjet = () => {
                                                     autoFocus
                                                 />
                                             </Col>
+
                                         </Row>
                                         <Row>
                                             <Button onClick={saveColor}>Sauvegarder</Button>
@@ -470,7 +579,7 @@ const DetailObjet = () => {
             </>
         );
     };
-    return(renderDetails())
+    return (renderDetails())
 };
 
 export default DetailObjet;
