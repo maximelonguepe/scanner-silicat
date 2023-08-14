@@ -6,7 +6,7 @@ export interface Objet {
     prixUnitaire: number;
     // Ajoutez d'autres propriétés si nécessaire
 }
-
+export const apiUrl = process.env.REACT_APP_API_URL;
 export interface Consommable {
     id: number;
     referenceProduit: string;

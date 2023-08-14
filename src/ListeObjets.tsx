@@ -2,12 +2,12 @@ import React, { useState, useEffect } from "react";
 import { Table,Button } from "react-bootstrap";
 import Barcode from "react-barcode";
 import {Link} from "react-router-dom";
-import {Objet} from "./types";
+import {apiUrl, Objet} from "./types";
 const ListeObjets = () => {
     const [objets, setObjets] = useState<Objet[]>([]);
     const fetchObjets = async () => {
         try {
-            const response = await fetch('http://localhost:8080/api/objets');
+            const response = await fetch(apiUrl+'objets');
             const jsonData = await response.json();
             setObjets(jsonData);
         } catch (error) {

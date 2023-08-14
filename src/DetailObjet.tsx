@@ -1,6 +1,6 @@
 import {useLocation} from "react-router-dom";
 import React, {useEffect, useRef, useState} from "react";
-import {Consommable, Couleur, Objet, Profil} from "./types";
+import {apiUrl, Consommable, Couleur, Objet, Profil} from "./types";
 import {Button, Col, FormControl, FormGroup, Row, Table} from "react-bootstrap";
 import Barcode from "react-barcode";
 import html2canvas from "html2canvas";
@@ -22,7 +22,7 @@ const DetailObjet = () => {
     });
     const fetchObjet = async (id: string) => {
         try {
-            const response = await fetch(`http://localhost:8080/api/objets/get?id=${id}`);
+            const response = await fetch(apiUrl+`objets/get?id=${id}`);
             const jsonData = await response.json();
             setObjet(jsonData);
             setLoading(false);
@@ -37,7 +37,7 @@ const DetailObjet = () => {
     }, [profil]);
     const fetchConsommable = async (id: string) => {
         try {
-            const response = await fetch(`http://localhost:8080/api/consommables/get?id=${id}`);
+            const response = await fetch(apiUrl+`consommables/get?id=${id}`);
             const jsonData = await response.json();
             setConsommable(jsonData);
             setLoading(false);
@@ -50,7 +50,7 @@ const DetailObjet = () => {
 
     const fetchProfil = async (id: string) => {
         try {
-            const response = await fetch(`http://localhost:8080/api/profils/get?id=${id}`);
+            const response = await fetch(apiUrl+`profils/get?id=${id}`);
             const jsonData = await response.json();
             console.log('fetch')
             setProfil(jsonData);
@@ -75,7 +75,7 @@ const DetailObjet = () => {
 
     const deleteCouleurFetch = async (idCouleur: number | null) => {
         try {
-            const response = await fetch(`http://localhost:8080/api/couleurs?id=${idCouleur}`, {
+            const response = await fetch(apiUrl+`couleurs?id=${idCouleur}`, {
                 method: 'DELETE',
                 headers: {
                     'Content-Type': 'application/json'
@@ -98,7 +98,7 @@ const DetailObjet = () => {
         try {
             // Mettez à jour les propriétés nécessaires de l'objet
 
-            const response = await fetch('http://localhost:8080/api/consommables', {
+            const response = await fetch(apiUrl+'consommables', {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
@@ -133,7 +133,7 @@ const DetailObjet = () => {
             }
 
             console.log('old value');
-            const response = await fetch('http://localhost:8080/api/profils', {
+            const response = await fetch(apiUrl+'profils', {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
@@ -160,6 +160,15 @@ const DetailObjet = () => {
         addingColorInArray();
         updateProfil();
         setIsEditingColors(false);
+    }
+
+    function hideEditingColor() {
+        setIsEditingColors(false);
+        setCouleurToBeEdited({
+            id: null,
+            nomCouleur: "",
+            metreLineaire: 0,
+        })
     }
 
     const location = useLocation();
@@ -379,7 +388,7 @@ const DetailObjet = () => {
 
                             </Col>
                             <Col>
-                                <div id='barcode'>
+                                <div id='barcode' style={{ display: 'inline-block', padding: '0', margin: '0' }}>
                                     <Barcode value={consommable.id.toString()} format="CODE39"/>
 
                                 </div>
@@ -464,11 +473,18 @@ const DetailObjet = () => {
                         </Row>
                         <Row>
                             <Col>
-                                Qr code :
+                                Code barre :
 
                             </Col>
                             <Col>
-                                <Barcode value={profil.id.toString()} format="CODE39"/>
+                                <div id='barcode' style={{ display: 'inline-block', padding: '0', margin: '0' }}>
+                                    <Barcode value={profil.id.toString()} format="CODE39"/>
+                                </div>
+                            </Col>
+                            <Col>
+                                <Button onClick={handleDownloadClick}>
+                                    Télécharger
+                                </Button>
                             </Col>
                         </Row>
                         <Row>
@@ -478,41 +494,51 @@ const DetailObjet = () => {
                         </Row>
                         {
                             profil.couleurs.length > 0 ?
-                                (<Table striped bordered>
-                                    <thead>
-                                    <tr>
-                                        <th>Nom</th>
-                                        <th>Quantité</th>
-                                    </tr>
-                                    </thead>
+                                (
+                                    <Table striped bordered>
 
-                                    {profil.couleurs.map(
-                                        (item) => (
+                                        <thead>
+                                        <tr>
+                                            <th>Nom</th>
+                                            <th>Quantité</th>
+                                            <th>
+                                                Action
+                                            </th>
+                                            <th>
+                                                Sous total
+                                            </th>
+                                        </tr>
+                                        </thead>
 
-                                            <tr>
+                                        {profil.couleurs.map(
+                                            (item) => (
 
-                                                <td>
+                                                <tr>
 
-
-                                                    {item.nomCouleur}
-
-                                                </td>
+                                                    <td>
 
 
-                                                <td>
-                                                    {item.metreLineaire}
-                                                </td>
+                                                        {item.nomCouleur}
 
-                                                <td>
-                                                    <Button
+                                                    </td>
+
+
+                                                    <td>
+                                                        {item.metreLineaire}
+                                                    </td>
+
+                                                    <td>
+                                                        <Button
                                                             onClick={() => deleteCouleur(item.id)}>Supprimer</Button>
-                                                </td>
+                                                    </td>
+                                                    <td>
+                                                        {item.metreLineaire * profil.prixUnitaire}€
+                                                    </td>
+                                                </tr>
 
-                                            </tr>
-
-                                        )
-                                    )}
-                                </Table>) :
+                                            )
+                                        )}
+                                    </Table>) :
                                 (<></>)
                         }
 
@@ -554,7 +580,9 @@ const DetailObjet = () => {
 
                                         </Row>
                                         <Row>
-                                            <Button onClick={saveColor}>Sauvegarder</Button>
+                                            <Col> <Button onClick={saveColor}>Sauvegarder</Button></Col>
+                                            <Col><Button onClick={hideEditingColor}>Annuler</Button></Col>
+
                                         </Row>
                                     </>
 

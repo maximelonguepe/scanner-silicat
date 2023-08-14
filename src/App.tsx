@@ -6,6 +6,7 @@ import Generatecodebarre from "./generatecodebarre";
 import NavbarApp from "./NavbarApp";
 import ListeObjets from "./ListeObjets";
 import DetailObjet from "./DetailObjet";
+import GenererObjet from "./GenererObjet";
 
 function App() {
     return (
@@ -15,6 +16,7 @@ function App() {
                 <Routes>
                     <Route path="/" element={<ListeObjets/>}/>
                     <Route path="/generate" element={<Generatecodebarre/>}/>
+                    <Route path="create" element={<GenererObjet/>}/>
                     <Route path="/objets" element={<DetailObjet/>}/>
                 </Routes>
             </div>
