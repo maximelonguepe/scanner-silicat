@@ -1,6 +1,6 @@
 import {Row, Col, Form, Button, FormControl, Table, Modal} from "react-bootstrap";
 import React, {ChangeEvent, useState} from "react";
-import {apiUrl, Couleur, Profil} from "./types";
+import {apiUrl, Consommable, Couleur, Profil} from "./types";
 import Barcode from "react-barcode";
 import {Link} from "react-router-dom";
 import html2canvas from "html2canvas";
@@ -12,7 +12,8 @@ const GenererObjet = () => {
         id: null, metreLineaire: 0, nomCouleur: ""
 
     })
-    const [showModalAjoutOk, setShowModalAjoutOk] = useState(false);
+    const [showModalAjoutProfilOk, setShowModalAjoutProfilOk] = useState(false);
+    const [showModalAjoutConsommableOk, setShowModalAjoutConsommableOk] = useState(false);
 
     const [profilSaved, setProfilSaved] = useState<Profil>({
         couleurs: [],
@@ -35,8 +36,17 @@ const GenererObjet = () => {
         id: 0
     });
 
-    function handleCloseModalAjoutOk() {
-        setShowModalAjoutOk(false);
+    const [consommable,setConsommable] = useState<Consommable>({
+        id: 0, prixUnitaire: 0, quantiteOuMl: 0, referenceProduit: "", type: "CONSOMMABLE"
+
+    })
+
+    const [consommableSaved,setConsommableSaved] = useState<Consommable>({
+        id: 0, prixUnitaire: 0, quantiteOuMl: 0, referenceProduit: "", type: "CONSOMMABLE"
+
+    })
+    function handleCloseModalAjoutProfilOk() {
+        setShowModalAjoutProfilOk(false);
         setProfil({
             couleurs: [],
             longueur: 0,
@@ -46,7 +56,15 @@ const GenererObjet = () => {
             referenceProduit: "",
             type: "PROFIL",
             id: 0
-        })
+        });
+    }
+    function handleCloseModalAjoutConsommableOk() {
+        setShowModalAjoutConsommableOk(false);
+        setConsommable({
+            id: 0, prixUnitaire: 0, quantiteOuMl: 0, referenceProduit: "", type: "CONSOMMABLE"
+
+
+        });
     }
 
 
@@ -76,7 +94,33 @@ const GenererObjet = () => {
 
             if (response.ok) {
                 setProfilSaved(data);
-                setShowModalAjoutOk(true);
+                setShowModalAjoutProfilOk(true);
+
+            } else {
+
+            }
+        } catch (error) {
+
+        }
+    };
+
+
+    const saveConsommableFetch = async () => {
+        try {
+            const response = await fetch(apiUrl + "consommables", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(consommable)
+            });
+
+            const data = await response.json();
+
+            if (response.ok) {
+                console.log(data);
+                setConsommableSaved(data);
+                setShowModalAjoutConsommableOk(true);
 
             } else {
 
@@ -92,6 +136,14 @@ const GenererObjet = () => {
     const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         const {name, value} = event.target;
         setProfil((prevObject) => ({
+            ...prevObject!,
+            [name]: value
+        }));
+    };
+
+    const handleInputChangeConsommable = (event: React.ChangeEvent<HTMLInputElement>) => {
+        const {name, value} = event.target;
+        setConsommable((prevObject) => ({
             ...prevObject!,
             [name]: value
         }));
@@ -156,11 +208,7 @@ const GenererObjet = () => {
                         <option value='CONSOMMABLE'>Consommable</option>
                     </Form.Select>
                 </Col>
-                <Col>
-                    <Button onClick={createFields}>
-                        Créer
-                    </Button>
-                </Col>
+
             </Row>
             <br/>
             <br/>
@@ -288,7 +336,64 @@ const GenererObjet = () => {
                     </Row>
                 </>
             )}
-            <Modal show={showModalAjoutOk} onHide={handleCloseModalAjoutOk}>
+            {typeSelected==="CONSOMMABLE"&&(
+                <>
+                    <Row>
+                        <Col>
+                            Référence :
+                        </Col>
+                        <Col>
+                            <FormControl
+                                type="text"
+                                name="referenceProduit"
+                                value={consommable.referenceProduit}
+                                onChange={handleInputChangeConsommable}
+                                autoFocus
+                            />
+                        </Col>
+                    </Row>
+                    <Row>
+                        <Col>
+                            Prix unitaire :
+                        </Col>
+                        <Col>
+                            <FormControl
+                                type="text"
+                                name="prixUnitaire"
+                                value={consommable.prixUnitaire}
+                                onChange={handleInputChangeConsommable}
+                                autoFocus
+                            />
+                        </Col>
+                    </Row>
+
+                    <Row>
+                        <Col>
+                            Quantité
+                        </Col>
+                        <Col>
+                            <FormControl
+                                type="text"
+                                name="quantiteOuMl"
+                                value={consommable.quantiteOuMl}
+                                onChange={handleInputChangeConsommable}
+                                autoFocus
+                            />
+                        </Col>
+                    </Row>
+                    <br/>
+                    <br/>
+                    <Row>
+                        <Col>
+                            <Button onClick={saveConsommableFetch} variant="success">
+                                Sauvegarder le consommable
+
+                            </Button>
+                        </Col>
+                    </Row>
+                </>
+                )}
+            <Modal show={showModalAjoutProfilOk} onHide={handleCloseModalAjoutProfilOk}>
                 <Modal.Header closeButton>
                     <Modal.Title>Ajout réussi</Modal.Title>
                 </Modal.Header>
@@ -381,7 +486,78 @@ const GenererObjet = () => {
                     <Row></Row>
                 </Modal.Body>
                 <Modal.Footer>
-                    <Button variant="primary" onClick={handleCloseModalAjoutOk}>
+                    <Button variant="primary" onClick={handleCloseModalAjoutProfilOk}>
+                        Ok
+                    </Button>
+                </Modal.Footer>
+            </Modal>
+
+
+            <Modal show={showModalAjoutConsommableOk} onHide={handleCloseModalAjoutConsommableOk}>
+                <Modal.Header closeButton>
+                    <Modal.Title>Ajout réussi</Modal.Title>
+                </Modal.Header>
+                <Modal.Body>
+                    <Row>
+                        <Col>
+                            Ajout réussi
+                        </Col>
+                    </Row>
+                    <Row>
+                        <Col>
+                            Code barre
+                        </Col>
+                        <Col>
+                            <div id='barcode' style={{display: 'inline-block', padding: '0', margin: '0'}}>
+                                <Barcode value={consommableSaved.id.toString()} format="CODE39"/>
+                            </div>
+                        </Col>
+                        <Col>
+                            <Button onClick={handleDownloadClick}>
+                                Télécharger
+                            </Button>
+                        </Col>
+                    </Row>
+                    <Row>
+                        <Col>
+                            Référence :
+
+                        </Col>
+                        <Col>
+                            {consommableSaved.referenceProduit}
+
+                        </Col>
+                    </Row>
+                    <Row>
+                        <Col>
+                            Prix au mètre linéaire :
+                        </Col>
+                        <Col>
+                            {consommableSaved.prixUnitaire} €
+                        </Col>
+                    </Row>
+
+                    <Row>
+                        <Col>
+                            Quantité
+                        </Col>
+                        <Col>
+                            {consommableSaved.quantiteOuMl}
+                        </Col>
+                    </Row>
+
+                    <Row>
+                        <Col>
+                            Prix total
+                        </Col>
+                        <Col>
+                            {consommableSaved.quantiteOuMl*consommableSaved.prixUnitaire} €
+                        </Col>
+                    </Row>
+
+                </Modal.Body>
+                <Modal.Footer>
+                    <Button variant="primary" onClick={handleCloseModalAjoutConsommableOk}>
                         Ok
                     </Button>
                 </Modal.Footer>
