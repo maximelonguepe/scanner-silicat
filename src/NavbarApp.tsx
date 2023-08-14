@@ -21,6 +21,14 @@ const NavbarApp = () => {
                                     </Button>
                                 </Link>
                             </Nav.Item>
+
+                            <Nav.Item id="my-events" className="d-flex mb-2 me-2 mb-lg-0">
+                                <Link to='/create'>
+                                    <Button>
+                                        Ajouter un objet
+                                    </Button>
+                                </Link>
+                            </Nav.Item>
                         </Nav>
                     </Navbar.Collapse>
                 </Container>
