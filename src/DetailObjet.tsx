@@ -22,7 +22,7 @@ const DetailObjet = () => {
     });
     const fetchObjet = async (id: string) => {
         try {
-            const response = await fetch(apiUrl+`objets/get?id=${id}`);
+            const response = await fetch(apiUrl + `objets/get?id=${id}`);
             const jsonData = await response.json();
             setObjet(jsonData);
             setLoading(false);
@@ -37,7 +37,7 @@ const DetailObjet = () => {
     }, [profil]);
     const fetchConsommable = async (id: string) => {
         try {
-            const response = await fetch(apiUrl+`consommables/get?id=${id}`);
+            const response = await fetch(apiUrl + `consommables/get?id=${id}`);
             const jsonData = await response.json();
             setConsommable(jsonData);
             setLoading(false);
@@ -50,7 +50,7 @@ const DetailObjet = () => {
 
     const fetchProfil = async (id: string) => {
         try {
-            const response = await fetch(apiUrl+`profils/get?id=${id}`);
+            const response = await fetch(apiUrl + `profils/get?id=${id}`);
             const jsonData = await response.json();
             console.log('fetch')
             setProfil(jsonData);
@@ -75,7 +75,7 @@ const DetailObjet = () => {
 
     const deleteCouleurFetch = async (idCouleur: number | null) => {
         try {
-            const response = await fetch(apiUrl+`couleurs?id=${idCouleur}`, {
+            const response = await fetch(apiUrl + `couleurs?id=${idCouleur}`, {
                 method: 'DELETE',
                 headers: {
                     'Content-Type': 'application/json'
@@ -98,7 +98,7 @@ const DetailObjet = () => {
         try {
             // Mettez à jour les propriétés nécessaires de l'objet
 
-            const response = await fetch(apiUrl+'consommables', {
+            const response = await fetch(apiUrl + 'consommables', {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
@@ -121,6 +121,32 @@ const DetailObjet = () => {
     const updateProfil = async () => {
         try {
             // Mettez à jour les propriétés nécessaires de l'objet
+            const response = await fetch(apiUrl + 'profils', {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(profil),
+            });
+
+            if (response.ok) {
+                console.log('Objet mis à jour avec succès.');
+                if (objet) {
+                    fetchProfil(objet.id.toString());
+                    renderDetails();
+                }
+                // Vous pouvez appeler fetchData() pour récupérer les données mises à jour après le PUT
+            } else {
+                console.error('Erreur lors de la mise à jour de l\'objet.');
+            }
+        } catch (error) {
+            console.error('Erreur lors de la mise à jour:', error);
+        }
+    };
+
+    const updateProfilWithCouleur = async () => {
+        try {
+            // Mettez à jour les propriétés nécessaires de l'objet
             let updatedProfil = null;
             if (profil) {
                 updatedProfil = {
@@ -133,7 +159,7 @@ const DetailObjet = () => {
             }
 
             console.log('old value');
-            const response = await fetch(apiUrl+'profils', {
+            const response = await fetch(apiUrl + 'profils', {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
@@ -158,7 +184,7 @@ const DetailObjet = () => {
 
     function saveColor() {
         addingColorInArray();
-        updateProfil();
+        updateProfilWithCouleur();
         setIsEditingColors(false);
     }
 
@@ -260,6 +286,8 @@ const DetailObjet = () => {
     function handleSaveModif() {
         if (objet?.type === 'CONSOMMABLE') {
             updateConsommable();
+        } else if (objet?.type === 'PROFIL') {
+            updateProfil();
         }
     }
 
@@ -388,7 +416,7 @@ const DetailObjet = () => {
 
                             </Col>
                             <Col>
-                                <div id='barcode' style={{ display: 'inline-block', padding: '0', margin: '0' }}>
+                                <div id='barcode' style={{display: 'inline-block', padding: '0', margin: '0'}}>
                                     <Barcode value={consommable.id.toString()} format="CODE39"/>
 
                                 </div>
@@ -477,7 +505,7 @@ const DetailObjet = () => {
 
                             </Col>
                             <Col>
-                                <div id='barcode' style={{ display: 'inline-block', padding: '0', margin: '0' }}>
+                                <div id='barcode' style={{display: 'inline-block', padding: '0', margin: '0'}}>
                                     <Barcode value={profil.id.toString()} format="CODE39"/>
                                 </div>
                             </Col>
@@ -596,6 +624,14 @@ const DetailObjet = () => {
                                     </>
                                 )
                             }
+
+                        </Row>
+                        <br/>
+                        <br/>
+                        <Row>
+                            <Col>
+                                <Button onClick={handleSaveModif}>Sauvegarder Modifications</Button>
+                            </Col>
 
                         </Row>
 
