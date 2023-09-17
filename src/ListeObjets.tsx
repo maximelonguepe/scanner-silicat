@@ -25,7 +25,10 @@ const ListeObjets = () => {
             console.error('Error fetching data:', error);
         }
     };
-
+    useEffect(() => {
+        const sommeDesPrix = objets.reduce((total, objet) => total + objet.prixUnitaire*objet.quantiteOuMl, 0);
+        setTotalSum(sommeDesPrix);
+    }, [objets]);
     const fetchdeleteObjet = async () => {
         try {
             // Remplacez 'URL_DE_VOTRE_API' par l'URL réelle de votre API
