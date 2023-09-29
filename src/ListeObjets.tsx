@@ -108,6 +108,7 @@ const ListeObjets = () => {
                             <option value='0'>Tous</option>
                             <option value='PROFIL'>Profil</option>
                             <option value='CONSOMMABLE'>Consommable</option>
+                            <option value='ACCESSOIRE'>Accessoire</option>
                         </Form.Select>
                     </Col>
                     <Col>

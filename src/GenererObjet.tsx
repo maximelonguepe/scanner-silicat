@@ -1,6 +1,6 @@
 import {Row, Col, Form, Button, FormControl, Table, Modal} from "react-bootstrap";
 import React, {ChangeEvent, useState} from "react";
-import {apiUrl, Consommable, Couleur, Profil} from "./types";
+import {Accessoire, apiUrl, Consommable, Couleur, Profil} from "./types";
 import Barcode from "react-barcode";
 import {Link} from "react-router-dom";
 import html2canvas from "html2canvas";
@@ -13,8 +13,13 @@ const GenererObjet = () => {
 
     })
     const [showModalAjoutProfilOk, setShowModalAjoutProfilOk] = useState(false);
-    const [showModalAjoutConsommableOk, setShowModalAjoutConsommableOk] = useState(false);
+    const [showModalAjoutAccessoireOk, setShowModalAjoutAccessoireOk] = useState(false);
 
+    const [showModalAjoutConsommableOk, setShowModalAjoutConsommableOk] = useState(false);
+    const [accessoireSaved,setAccessoireSaved]=useState<Accessoire>({
+        couleurs: [], id: 0, prixUnitaire: 0, quantiteOuMl: 0, referenceProduit: "", type: ""
+
+    });
     const [profilSaved, setProfilSaved] = useState<Profil>({
         couleurs: [],
         longueur: 0,
@@ -36,6 +41,10 @@ const GenererObjet = () => {
         id: 0
     });
 
+    const [accessoire, setAccessoire] = useState<Accessoire>({
+        couleurs: [], id: 0, prixUnitaire: 0, quantiteOuMl: 0, referenceProduit: "", type: "ACCESSOIRE"
+
+    })
     const [consommable,setConsommable] = useState<Consommable>({
         id: 0, prixUnitaire: 0, quantiteOuMl: 0, referenceProduit: "", type: "CONSOMMABLE"
 
@@ -57,6 +66,11 @@ const GenererObjet = () => {
             type: "PROFIL",
             id: 0
         });
+    }
+
+    function handleCloseModalAjoutAccessoireOk() {
+        setShowModalAjoutAccessoireOk(false);
+        setAccessoire({couleurs: [], id: 0, prixUnitaire: 0, quantiteOuMl: 0, referenceProduit: "", type: ""});
     }
     function handleCloseModalAjoutConsommableOk() {
         setShowModalAjoutConsommableOk(false);
@@ -105,6 +119,32 @@ const GenererObjet = () => {
     };
 
 
+    const saveAccessoireFetch = async () => {
+        try {
+            const response = await fetch(apiUrl + "profils", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(accessoire)
+            });
+
+            const data = await response.json();
+
+            if (response.ok) {
+                console.log(data);
+                setAccessoireSaved(data);
+                setShowModalAjoutAccessoireOk(true);
+
+            } else {
+
+            }
+        } catch (error) {
+
+        }
+    };
+
+
     const saveConsommableFetch = async () => {
         try {
             const response = await fetch(apiUrl + "consommables", {
@@ -141,6 +181,13 @@ const GenererObjet = () => {
         }));
     };
 
+    const handleInputAccessoireChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+        const {name, value} = event.target;
+        setAccessoire((prevObject) => ({
+            ...prevObject!,
+            [name]: value
+        }));
+    };
     const handleInputChangeConsommable = (event: React.ChangeEvent<HTMLInputElement>) => {
         const {name, value} = event.target;
         setConsommable((prevObject) => ({
@@ -149,10 +196,16 @@ const GenererObjet = () => {
         }));
     };
 
-    function saveColor() {
+    function saveColorProfil() {
         addingColorInArray();
         setIsCreatingCouleur(false);
     }
+
+    function saveColorAccessoire() {
+        addingColorInArrayAccessoire();
+        setIsCreatingCouleur(false);
+    }
+
 
     const addingColorInArray = () => {
         setProfil((prevProfil) => {
@@ -169,6 +222,20 @@ const GenererObjet = () => {
         });
     };
 
+    const addingColorInArrayAccessoire = () => {
+        setAccessoire((prevProfil) => {
+            if (prevProfil) {
+                return {
+                    ...prevProfil!,
+                    couleurs: [
+                        ...prevProfil.couleurs!,
+                        couleurToBeEdited
+                    ]
+                };
+            }
+            return prevProfil; // Renvoie null ou le profil inchangé en fonction de votre logique
+        });
+    };
     function editCouleurs() {
         setIsCreatingCouleur(true);
     }
@@ -206,6 +273,7 @@ const GenererObjet = () => {
                     <Form.Select onChange={handleSelectChange} value={typeSelected}>
                         <option value='PROFIL'>Profil</option>
                         <option value='CONSOMMABLE'>Consommable</option>
+                        <option value='ACCESSOIRE'>Accessoire</option>
                     </Form.Select>
                 </Col>
 
@@ -309,7 +377,7 @@ const GenererObjet = () => {
                                     </Col>
                                 </Row>
                                 <Row>
-                                    <Col> <Button onClick={saveColor}>Sauvegarder</Button></Col>
+                                    <Col> <Button onClick={saveColorProfil}>Sauvegarder</Button></Col>
                                     <Col><Button onClick={hideEditingColor}>Annuler</Button></Col>
 
                                 </Row>
@@ -393,6 +461,134 @@ const GenererObjet = () => {
                     </Row>
                 </>
                 )}
+
+            {typeSelected==="ACCESSOIRE"&&(
+                <>
+                    <>
+                        <Row>
+                            <Col>
+                                Référence :
+                            </Col>
+                            <Col>
+                                <FormControl
+                                    type="text"
+                                    name="referenceProduit"
+                                    value={accessoire.referenceProduit}
+                                    onChange={handleInputAccessoireChange}
+                                    autoFocus
+                                />
+                            </Col>
+                        </Row>
+                        <Row>
+                            <Col>
+                                Prix unitaire
+                            </Col>
+                            <Col>
+                                <FormControl
+                                    type="text"
+                                    name="prixUnitaire"
+                                    value={accessoire.prixUnitaire}
+                                    onChange={handleInputAccessoireChange}
+                                    autoFocus
+                                />
+                            </Col>
+                        </Row>
+                        <br/>
+                        <br/>
+
+                        {accessoire.couleurs.length > 0 && (
+                            <Table striped bordered>
+                                <thead>
+                                <tr>
+                                    <th>Couleur</th>
+                                    <th>Quantité</th>
+                                    <th>Sous total</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                {accessoire.couleurs.map((item) => (
+                                    <tr key={item.id}>
+                                        <td>
+                                            {item.nomCouleur}
+                                        </td>
+                                        <td>
+                                            {item.metreLineaire}
+                                        </td>
+                                        <td>
+                                            {item.metreLineaire * accessoire.prixUnitaire}
+                                        </td>
+                                    </tr>
+                                ))}
+                                </tbody>
+                            </Table>
+
+
+                        )}
+
+                        <br/>
+                        <br/>
+                        {
+                            isCreatingCouleur && (
+                                <>
+                                    <Row>
+                                        <Col>
+                                            Nom de la couleur
+                                        </Col>
+                                        <Col>
+                                            <FormControl
+                                                type="text"
+                                                name="nomCouleur"
+                                                value={couleurToBeEdited.nomCouleur}
+                                                onChange={handleInputChangeNewColor}
+                                                autoFocus
+                                            />
+                                        </Col>
+                                    </Row>
+                                    <Row>
+                                        <Col>
+                                            Nombre de metres lineaires
+                                        </Col>
+
+                                        <Col>
+                                            <FormControl
+                                                type="text"
+                                                name="metreLineaire"
+                                                value={couleurToBeEdited.metreLineaire}
+                                                onChange={handleInputChangeNewColor}
+                                                autoFocus
+                                            />
+                                        </Col>
+                                    </Row>
+                                    <Row>
+                                        <Col> <Button onClick={saveColorAccessoire}>Sauvegarder</Button></Col>
+                                        <Col><Button onClick={hideEditingColor}>Annuler</Button></Col>
+
+                                    </Row>
+                                    <br/>
+                                </>
+                            )
+                        }
+
+                        <Row>
+                            <Col>
+                                <Button onClick={editCouleurs} variant="primary">
+                                    Ajouter une couleur
+                                </Button>
+                            </Col>
+                        </Row>
+                        <br/>
+                        <Row>
+                            <Col>
+                                <Button onClick={saveAccessoireFetch} variant="success">
+                                    Sauvegarder l'accessoire
+
+                                </Button>
+                            </Col>
+                        </Row>
+                    </>
+                </>
+            )
+            }
             <Modal show={showModalAjoutProfilOk} onHide={handleCloseModalAjoutProfilOk}>
                 <Modal.Header closeButton>
                     <Modal.Title>Ajout réussi</Modal.Title>
@@ -487,6 +683,107 @@ const GenererObjet = () => {
                 </Modal.Body>
                 <Modal.Footer>
                     <Button variant="primary" onClick={handleCloseModalAjoutProfilOk}>
+                        Ok
+                    </Button>
+                </Modal.Footer>
+            </Modal>
+
+
+
+            <Modal show={showModalAjoutAccessoireOk} onHide={handleCloseModalAjoutAccessoireOk}>
+                <Modal.Header closeButton>
+                    <Modal.Title>Ajout accessoire réussi</Modal.Title>
+                </Modal.Header>
+                <Modal.Body>
+                    <Row>
+                        <Col>
+                            Ajout réussi
+                        </Col>
+                    </Row>
+                    <Row>
+                        <Col>
+                            Code barre
+                        </Col>
+                        <Col>
+                            <div id='barcode' style={{display: 'inline-block', padding: '0', margin: '0'}}>
+                                <Barcode value={accessoireSaved.id.toString()} format="CODE39"/>
+                            </div>
+                        </Col>
+                        <Col>
+                            <Button onClick={handleDownloadClick}>
+                                Télécharger
+                            </Button>
+                        </Col>
+                    </Row>
+                    <Row>
+                        <Col>
+                            Référence :
+
+                        </Col>
+                        <Col>
+                            {accessoireSaved.referenceProduit}
+
+                        </Col>
+                    </Row>
+                    <Row>
+                        <Col>
+                            Prix unitaire :
+                        </Col>
+                        <Col>
+                            {accessoireSaved.prixUnitaire} €
+                        </Col>
+                    </Row>
+
+                    <Row>
+                        <Col>
+                            Quantité
+                        </Col>
+                        <Col>
+                            {accessoireSaved.quantiteOuMl} u
+                        </Col>
+                    </Row>
+
+                    <Row>
+                        <Col>
+                            Prix total
+                        </Col>
+                        <Col>
+                            {accessoireSaved.quantiteOuMl*accessoireSaved.prixUnitaire} €
+                        </Col>
+                    </Row>
+                    <br/>
+                    {accessoireSaved.couleurs.length > 0 && (
+                        <Table striped bordered>
+                            <thead>
+                            <tr>
+                                <th>Couleur</th>
+                                <th>Quantité</th>
+                                <th>Sous total</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            {accessoireSaved.couleurs.map((item) => (
+                                <tr key={item.id}>
+                                    <td>
+                                        {item.nomCouleur}
+                                    </td>
+                                    <td>
+                                        {item.metreLineaire}
+                                    </td>
+                                    <td>
+                                        {item.metreLineaire * accessoireSaved.prixUnitaire} €
+                                    </td>
+                                </tr>
+                            ))}
+                            </tbody>
+                        </Table>
+
+
+                    )}
+                    <Row></Row>
+                </Modal.Body>
+                <Modal.Footer>
+                    <Button variant="primary" onClick={handleCloseModalAjoutAccessoireOk}>
                         Ok
                     </Button>
                 </Modal.Footer>

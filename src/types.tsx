@@ -26,6 +26,14 @@ export interface Profil {
     couleurs: Couleur[];
 }
 
+export interface Accessoire {
+    id: number;
+    referenceProduit: string;
+    type: string;
+    quantiteOuMl: number;
+    prixUnitaire: number;
+    couleurs: Couleur[];
+}
 export interface Couleur{
     id:number|null;
     nomCouleur:string;
