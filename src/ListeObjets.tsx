@@ -37,10 +37,11 @@ const ListeObjets = () => {
                 headers: {
                     'Content-Type': 'application/json', // Vous pouvez ajuster les en-têtes selon vos besoins
                 },
+
             }
-
             );
-
+            setShowModalDeleteObjet(false);
+            renderList();
         }catch (error) {
             console.error('Error fetching data:', error);
         }

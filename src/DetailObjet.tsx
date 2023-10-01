@@ -1,6 +1,6 @@
 import {useLocation} from "react-router-dom";
 import React, {useEffect, useRef, useState} from "react";
-import {apiUrl, Consommable, Couleur, Objet, Profil} from "./types";
+import {Accessoire, apiUrl, Consommable, Couleur, Objet, Profil} from "./types";
 import {Button, Col, FormControl, FormGroup, Row, Table} from "react-bootstrap";
 import Barcode from "react-barcode";
 import html2canvas from "html2canvas";
@@ -11,6 +11,8 @@ const DetailObjet = () => {
     const [error, setError] = useState<string | null>(null);
     const [consommable, setConsommable] = useState<Consommable | null>(null);
     const [profil, setProfil] = useState<Profil | null>(null)
+    const [accessoire, setAccessoire] = useState<Accessoire | null>(null)
+
     const [isEditingColors, setIsEditingColors] = useState(false);
     const [editingPU, setEditingPU] = useState(false);
     const [editingReference, setEditingReference] = useState(false);
@@ -32,9 +34,6 @@ const DetailObjet = () => {
             setLoading(false);
         }
     };
-    useEffect(() => {
-        console.log("Profil up to date :", profil);
-    }, [profil]);
     const fetchConsommable = async (id: string) => {
         try {
             const response = await fetch(apiUrl + `consommables/get?id=${id}`);
@@ -54,6 +53,20 @@ const DetailObjet = () => {
             const jsonData = await response.json();
             console.log('fetch')
             setProfil(jsonData);
+            setLoading(false);
+        } catch (error) {
+            console.error('Error fetching data:', error);
+            setError("Erreur lors du chargement de l'objet.");
+            setLoading(false);
+        }
+    };
+
+    const fetchAccessoire = async (id: string) => {
+        try {
+            const response = await fetch(apiUrl + `accessoires/get?id=${id}`);
+            const jsonData = await response.json();
+            console.log(jsonData);
+            setAccessoire(jsonData);
             setLoading(false);
         } catch (error) {
             console.error('Error fetching data:', error);
@@ -84,7 +97,11 @@ const DetailObjet = () => {
 
             if (response.ok) {
                 if (objet) {
-                    fetchProfil(objet?.id.toString());
+                    if(objet.type==="PROFIL"){
+                        fetchProfil(objet?.id.toString());
+                    } else if (objet.type === "ACCESSOIRE"){
+                        fetchAccessoire(objet?.id.toString());
+                    }
                     renderDetails();
                 }
             } else {
@@ -107,7 +124,7 @@ const DetailObjet = () => {
             });
 
             if (response.ok) {
-                console.log('Objet mis à jour avec succès.');
+
                 // Vous pouvez appeler fetchData() pour récupérer les données mises à jour après le PUT
             } else {
                 console.error('Erreur lors de la mise à jour de l\'objet.');
@@ -144,6 +161,32 @@ const DetailObjet = () => {
         }
     };
 
+
+    const updateAccessoire = async () => {
+        try {
+            // Mettez à jour les propriétés nécessaires de l'objet
+            const response = await fetch(apiUrl + 'accessoires', {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(accessoire),
+            });
+
+            if (response.ok) {
+                console.log('Objet mis à jour avec succès.');
+                if (objet) {
+                    fetchAccessoire(objet.id.toString());
+                    renderDetails();
+                }
+                // Vous pouvez appeler fetchData() pour récupérer les données mises à jour après le PUT
+            } else {
+                console.error('Erreur lors de la mise à jour de l\'objet.');
+            }
+        } catch (error) {
+            console.error('Erreur lors de la mise à jour:', error);
+        }
+    };
     const updateProfilWithCouleur = async () => {
         try {
             // Mettez à jour les propriétés nécessaires de l'objet
@@ -182,9 +225,52 @@ const DetailObjet = () => {
         }
     };
 
+    const updateAccessoireWithCouleur = async () => {
+        try {
+            // Mettez à jour les propriétés nécessaires de l'objet
+            let updatedAccessoire = null;
+            if (accessoire) {
+                updatedAccessoire = {
+                    ...accessoire,
+                    couleurs: [
+                        ...accessoire.couleurs,
+                        couleurToBeEdited
+                    ]
+                };
+            }
+
+            console.log('old value');
+            const response = await fetch(apiUrl + 'accessoires', {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(updatedAccessoire),
+            });
+
+            if (response.ok) {
+                console.log('Objet mis à jour avec succès.');
+                if (objet) {
+                    fetchAccessoire(objet.id.toString());
+                    renderDetails();
+                }
+                // Vous pouvez appeler fetchData() pour récupérer les données mises à jour après le PUT
+            } else {
+                console.error('Erreur lors de la mise à jour de l\'objet.');
+            }
+        } catch (error) {
+            console.error('Erreur lors de la mise à jour:', error);
+        }
+    };
     function saveColor() {
         addingColorInArray();
         updateProfilWithCouleur();
+        setIsEditingColors(false);
+    }
+
+    function saveColorAccessoire() {
+        addingColorInArrayAccessoire();
+        updateAccessoireWithCouleur();
         setIsEditingColors(false);
     }
 
@@ -222,8 +308,31 @@ const DetailObjet = () => {
             [name]: value
         }));
     };
+
+    const handleInputChangeAccessoire = (event: React.ChangeEvent<HTMLInputElement>) => {
+        const {name, value} = event.target;
+        setAccessoire((prevObject) => ({
+            ...prevObject!,
+            [name]: value
+        }));
+    };
     const addingColorInArray = () => {
         setProfil((prevProfil) => {
+            if (prevProfil) {
+                return {
+                    ...prevProfil!,
+                    couleurs: [
+                        ...prevProfil.couleurs!,
+                        couleurToBeEdited
+                    ]
+                };
+            }
+            return prevProfil; // Renvoie null ou le profil inchangé en fonction de votre logique
+        });
+    };
+
+    const addingColorInArrayAccessoire = () => {
+        setAccessoire((prevProfil) => {
             if (prevProfil) {
                 return {
                     ...prevProfil!,
@@ -248,11 +357,14 @@ const DetailObjet = () => {
 
     useEffect(() => {
         if (objet) {
-
+            console.log("objet ----> ");
+            console.log(objet);
             if (objet.type === "CONSOMMABLE") {
                 fetchConsommable(objet.id.toString());
             } else if (objet.type === "PROFIL") {
                 fetchProfil(objet.id.toString());
+            } else if (objet.type === "ACCESSOIRE") {
+                fetchAccessoire(objet.id.toString());
             }
         }
     }, [objet]);
@@ -262,6 +374,10 @@ const DetailObjet = () => {
         setEditingReference(false);
     };
     const handleInputProfilRefBlur = () => {
+        setEditingReference(false);
+    };
+
+    const handleInputAccessoireRefBlur = () => {
         setEditingReference(false);
     };
     const handleInputPUBlur = () => {
@@ -287,7 +403,11 @@ const DetailObjet = () => {
         if (objet?.type === 'CONSOMMABLE') {
             updateConsommable();
         } else if (objet?.type === 'PROFIL') {
+            console.log("update profil");
             updateProfil();
+        } else if (objet?.type === 'ACCESSOIRE') {
+            console.log("update accessoire");
+            updateAccessoire();
         }
     }
 
@@ -537,7 +657,7 @@ const DetailObjet = () => {
                                             </th>
                                         </tr>
                                         </thead>
-
+                                        <tbody>
                                         {profil.couleurs.map(
                                             (item) => (
 
@@ -566,6 +686,7 @@ const DetailObjet = () => {
 
                                             )
                                         )}
+                                        </tbody>
                                     </Table>) :
                                 (<></>)
                         }
@@ -639,6 +760,226 @@ const DetailObjet = () => {
                 )
                 }
 
+                {accessoire && (
+                    <>
+                        <Row>
+                            <Col>
+                                Référence :
+                            </Col>
+                            <Col>
+
+
+                                {editingReference ?
+                                    (
+                                        <FormControl
+                                            type="text"
+                                            name="referenceProduit"
+                                            value={accessoire.referenceProduit}
+                                            onChange={handleInputChangeAccessoire}
+                                            onBlur={handleInputAccessoireRefBlur}
+                                            autoFocus
+                                        />
+                                    ) : (
+                                        <span>{accessoire.referenceProduit}</span>
+
+                                    )
+                                }
+                            </Col>
+                            <Col>
+                                <Button onClick={handleEditClickRef}>Modifier</Button>
+                            </Col>
+                        </Row>
+                        <Row>
+                            <Col>
+                                Prix unitaire :
+                            </Col>
+                            <Col>
+                                {
+                                    editingPU ? (
+                                        <FormControl
+                                            type="text"
+                                            name="prixUnitaire"
+                                            value={accessoire.prixUnitaire}
+                                            onChange={handleInputChangeAccessoire}
+                                            onBlur={handleInputPUBlur}
+                                            autoFocus
+                                        />
+                                    ) : (
+                                        <span>
+                                            {accessoire?.prixUnitaire}
+                                        </span>
+                                    )
+                                }
+                            </Col>
+                            <Col>
+                                <Button onClick={handleEditClickConsommablePU} variant="primary">
+                                    Modifier
+                                </Button>
+                            </Col>
+                        </Row>
+                        <Row>
+                            <Col>
+                                Quantité totale :
+                            </Col>
+                            <Col>
+                                <span>{accessoire.quantiteOuMl}</span>
+                            </Col>
+                            <Col>
+                                u
+                            </Col>
+                        </Row>
+                        <Row>
+                            <Col>
+                                Prix total :
+                            </Col>
+                            <Col>
+                                <span>{accessoire.quantiteOuMl * accessoire.prixUnitaire}</span>
+                            </Col>
+                            <Col>
+                                €
+                            </Col>
+                        </Row>
+                        <Row>
+                            <Col>
+                                Code barre :
+
+                            </Col>
+                            <Col>
+                                <div id='barcode' style={{display: 'inline-block', padding: '0', margin: '0'}}>
+                                    <Barcode value={accessoire.id.toString()} format="CODE39"/>
+                                </div>
+                            </Col>
+                            <Col>
+                                <Button onClick={handleDownloadClick}>
+                                    Télécharger
+                                </Button>
+                            </Col>
+                        </Row>
+                        <Row>
+                            <Col>
+                                Couleurs et tailles :
+                            </Col>
+                        </Row>
+                        {
+                            accessoire.couleurs.length > 0 ?
+                                (
+                                    <Table striped bordered>
+
+                                        <thead>
+                                        <tr>
+                                            <th>Nom</th>
+                                            <th>Quantité</th>
+                                            <th>
+                                                Action
+                                            </th>
+                                            <th>
+                                                Sous total
+                                            </th>
+                                        </tr>
+                                        </thead>
+                                        <tbody>
+
+                                        {accessoire.couleurs.map(
+                                            (item) => (
+
+                                                <tr>
+
+                                                    <td>
+
+
+                                                        {item.nomCouleur}
+
+                                                    </td>
+
+
+                                                    <td>
+                                                        {item.metreLineaire}
+                                                    </td>
+
+                                                    <td>
+                                                        <Button
+                                                            onClick={() => deleteCouleur(item.id)}>Supprimer</Button>
+                                                    </td>
+                                                    <td>
+                                                        {item.metreLineaire * accessoire.prixUnitaire}€
+                                                    </td>
+                                                </tr>
+
+                                            )
+                                        )}
+                                        </tbody>
+                                    </Table>) :
+                                (<></>)
+                        }
+
+                        <br/>
+                        <br/>
+
+                        <Row>
+                            {
+                                isEditingColors ? (
+                                    <>
+                                        <Row>
+                                            <Col>
+                                                Nom couleur
+                                            </Col>
+                                            <Col>
+                                                <FormControl
+                                                    type="text"
+                                                    name="nomCouleur"
+                                                    value={couleurToBeEdited.nomCouleur}
+                                                    onChange={handleInputChangeNewColor}
+                                                    autoFocus
+                                                />
+                                            </Col>
+
+                                        </Row>
+                                        <Row>
+                                            <Col>
+                                                Nombre de metres linéaires
+                                            </Col>
+                                            <Col>
+                                                <FormControl
+                                                    type="text"
+                                                    name="metreLineaire"
+                                                    value={couleurToBeEdited.metreLineaire}
+                                                    onChange={handleInputChangeNewColor}
+                                                    autoFocus
+                                                />
+                                            </Col>
+
+                                        </Row>
+                                        <Row>
+                                            <Col> <Button onClick={saveColorAccessoire}>Sauvegarder</Button></Col>
+                                            <Col><Button onClick={hideEditingColor}>Annuler</Button></Col>
+
+                                        </Row>
+                                    </>
+
+                                ) : (
+                                    <>
+                                        <Col>
+                                            <Button onClick={editColors}>
+                                                Ajouter une couleur
+                                            </Button>
+                                        </Col>
+                                    </>
+                                )
+                            }
+
+                        </Row>
+                        <br/>
+                        <br/>
+                        <Row>
+                            <Col>
+                                <Button onClick={handleSaveModif}>Sauvegarder Modifications</Button>
+                            </Col>
+
+                        </Row>
+
+                    </>
+                )
+                }
 
             </>
         );

@@ -121,7 +121,7 @@ const GenererObjet = () => {
 
     const saveAccessoireFetch = async () => {
         try {
-            const response = await fetch(apiUrl + "profils", {
+            const response = await fetch(apiUrl + "accessoires", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json"
