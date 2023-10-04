@@ -538,7 +538,9 @@ const DetailObjet = () => {
                             <Col>
                                 <div id='barcode' style={{display: 'inline-block', padding: '0', margin: '0'}}>
                                     <Barcode value={consommable.id.toString()} format="CODE39"/>
-
+                                    <div>
+                                        {consommable.referenceProduit}
+                                    </div>
                                 </div>
 
                             </Col>
@@ -627,6 +629,9 @@ const DetailObjet = () => {
                             <Col>
                                 <div id='barcode' style={{display: 'inline-block', padding: '0', margin: '0'}}>
                                     <Barcode value={profil.id.toString()} format="CODE39"/>
+                                    <div>
+                                        {profil.referenceProduit}
+                                    </div>
                                 </div>
                             </Col>
                             <Col>
@@ -847,6 +852,9 @@ const DetailObjet = () => {
                             <Col>
                                 <div id='barcode' style={{display: 'inline-block', padding: '0', margin: '0'}}>
                                     <Barcode value={accessoire.id.toString()} format="CODE39"/>
+                                    <div>
+                                        {accessoire.referenceProduit}
+                                    </div>
                                 </div>
                             </Col>
                             <Col>
