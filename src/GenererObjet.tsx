@@ -4,6 +4,7 @@ import {Accessoire, apiUrl, Consommable, Couleur, Profil} from "./types";
 import Barcode from "react-barcode";
 import {Link} from "react-router-dom";
 import html2canvas from "html2canvas";
+import Cookies from "js-cookie";
 
 const GenererObjet = () => {
     const [typeSelected, setTypeSelected] = useState('PROFIL');
@@ -95,12 +96,15 @@ const GenererObjet = () => {
     };
 
     const saveProfilFetch = async () => {
+        let token = Cookies.get("token");
+
+        const headers = new Headers();
+        headers.append('Authorization', `Bearer ${token}`);
+        headers.append("Content-Type","application/json")
         try {
             const response = await fetch(apiUrl + "profils", {
                 method: "POST",
-                headers: {
-                    "Content-Type": "application/json"
-                },
+                headers: headers,
                 body: JSON.stringify(profil)
             });
 

@@ -4,6 +4,7 @@ import {Accessoire, apiUrl, Consommable, Couleur, Objet, Profil} from "./types";
 import {Button, Col, FormControl, FormGroup, Row, Table} from "react-bootstrap";
 import Barcode from "react-barcode";
 import html2canvas from "html2canvas";
+import {generateHeaderDelete, generateHeaderGet} from "./HeadersUtils";
 
 const DetailObjet = () => {
     const [loading, setLoading] = useState(true);
@@ -24,7 +25,11 @@ const DetailObjet = () => {
     });
     const fetchObjet = async (id: string) => {
         try {
-            const response = await fetch(apiUrl + `objets/get?id=${id}`);
+            const headers = generateHeaderGet()
+            const response = await fetch(apiUrl + `objets/get?id=${id}`,{
+                method: 'GET',
+                headers: headers
+            });
             const jsonData = await response.json();
             setObjet(jsonData);
             setLoading(false);
@@ -36,7 +41,11 @@ const DetailObjet = () => {
     };
     const fetchConsommable = async (id: string) => {
         try {
-            const response = await fetch(apiUrl + `consommables/get?id=${id}`);
+            const headers = generateHeaderGet()
+            const response = await fetch(apiUrl + `consommables/get?id=${id}`,{
+                method: 'GET',
+                headers: headers
+            });
             const jsonData = await response.json();
             setConsommable(jsonData);
             setLoading(false);
@@ -49,7 +58,11 @@ const DetailObjet = () => {
 
     const fetchProfil = async (id: string) => {
         try {
-            const response = await fetch(apiUrl + `profils/get?id=${id}`);
+            const headers = generateHeaderGet()
+            const response = await fetch(apiUrl + `profils/get?id=${id}`,{
+                method: 'GET',
+                headers: headers
+            });
             const jsonData = await response.json();
             console.log('fetch')
             setProfil(jsonData);
@@ -63,7 +76,11 @@ const DetailObjet = () => {
 
     const fetchAccessoire = async (id: string) => {
         try {
-            const response = await fetch(apiUrl + `accessoires/get?id=${id}`);
+            const headers = generateHeaderGet()
+            const response = await fetch(apiUrl + `accessoires/get?id=${id}`,{
+                method: 'GET',
+                headers: headers
+            });
             const jsonData = await response.json();
             console.log(jsonData);
             setAccessoire(jsonData);
@@ -90,9 +107,7 @@ const DetailObjet = () => {
         try {
             const response = await fetch(apiUrl + `couleurs?id=${idCouleur}`, {
                 method: 'DELETE',
-                headers: {
-                    'Content-Type': 'application/json'
-                }
+                headers: generateHeaderDelete()
             });
 
             if (response.ok) {

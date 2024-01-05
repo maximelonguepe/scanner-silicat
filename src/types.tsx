@@ -6,7 +6,9 @@ export interface Objet {
     prixUnitaire: number;
     // Ajoutez d'autres propriétés si nécessaire
 }
+
 export const apiUrl = process.env.REACT_APP_API_URL;
+
 export interface Consommable {
     id: number;
     referenceProduit: string;
@@ -34,8 +36,19 @@ export interface Accessoire {
     prixUnitaire: number;
     couleurs: Couleur[];
 }
-export interface Couleur{
-    id:number|null;
-    nomCouleur:string;
-    metreLineaire:number;
+
+export interface Couleur {
+    id: number | null;
+    nomCouleur: string;
+    metreLineaire: number;
+}
+
+
+export interface UserLogin {
+    email: string;
+    password: string
+}
+
+export interface LoginResponse {
+    token: string
 }

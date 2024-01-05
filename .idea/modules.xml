@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/../scanner-silicat.iml" filepath="$PROJECT_DIR$/../scanner-silicat.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/scanner-silicat.iml" filepath="$PROJECT_DIR$/.idea/scanner-silicat.iml" />
     </modules>
   </component>
 </project>

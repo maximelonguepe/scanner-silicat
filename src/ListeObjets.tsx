@@ -4,20 +4,40 @@ import Barcode from "react-barcode";
 import {Link} from "react-router-dom";
 import {apiUrl, Objet} from "./types";
 import {type} from "os";
+import {Route, useNavigate} from 'react-router-dom';
+import Cookies from "js-cookie";
+import {isTokenValid} from "./tokenUtils";
+import axios, {Axios} from "axios";
+import {generateHeaderGet, generateHeaderPost} from "./HeadersUtils";
 
 const ListeObjets = () => {
+    const nav = useNavigate();
+    let headers = new Headers();
+    let token: string | undefined;
     const [objets, setObjets] = useState<Objet[]>([]);
     const [typeSelected, setTypeSelected] = useState('TOUS');
     const [idSearched, setIdSearched] = useState('');
     const [showModalDeleteObjet, setShowModalDeleteObjet] = useState(false);
     const [totalSum, setTotalSum] = useState(0);
-    const [objetSelected, setObjetSelected]=useState<Objet>({
-        type:"", id: 0, prixUnitaire: 0, quantiteOuMl: 0, referenceProduit: ""
+    const [objetSelected, setObjetSelected] = useState<Objet>({
+        type: "", id: 0, prixUnitaire: 0, quantiteOuMl: 0, referenceProduit: ""
 
     })
+    useEffect(() => {
+        //headers.append('Authorization', `Bearer ${token}`)
+        fetchObjets();
+
+    }, []);
     const fetchObjets = async () => {
         try {
-            const response = await fetch(apiUrl + 'objets');
+            // token = Cookies.get("token");
+            // const headers = new Headers();
+            //headers.append('Authorization', `Bearer ${token}`);
+            const headers = generateHeaderGet()
+            const response = await fetch(apiUrl + 'objets', {
+                method: 'GET',
+                headers: headers
+            });
             const jsonData = await response.json();
 
             setObjets(jsonData);
@@ -25,33 +45,44 @@ const ListeObjets = () => {
             console.error('Error fetching data:', error);
         }
     };
+
+
+    const fetchObjetsAxios = async () => {
+        return axios.get(apiUrl + 'objets', {headers: {Authorization: `Bearer ${token}`}});
+    };
+
+
     useEffect(() => {
-        const sommeDesPrix = objets.reduce((total, objet) => total + objet.prixUnitaire*objet.quantiteOuMl, 0);
+        const sommeDesPrix = objets.reduce((total, objet) => total + objet.prixUnitaire * objet.quantiteOuMl, 0);
         setTotalSum(sommeDesPrix);
     }, [objets]);
-    const fetchdeleteObjet = async () => {
-        try {
-            // Remplacez 'URL_DE_VOTRE_API' par l'URL réelle de votre API
-            const response = await fetch(apiUrl + `objets?id=${objetSelected.id}`, {
-                method: 'DELETE',
-                headers: {
-                    'Content-Type': 'application/json', // Vous pouvez ajuster les en-têtes selon vos besoins
-                },
 
-            }
+
+    const fetchdeleteObjet = async () => {
+        token = Cookies.get("token");
+        if (token == undefined || !isTokenValid(token)) {
+            nav("/");
+        }
+
+        const headers = generateHeaderPost();
+        try {
+            const response = await fetch(apiUrl + `objets?id=${objetSelected.id}`, {
+                    method: 'DELETE',
+                    headers: headers,
+                }
             );
             setShowModalDeleteObjet(false);
             renderList();
-        }catch (error) {
+        } catch (error) {
             console.error('Error fetching data:', error);
         }
     }
 
 
     const fetchObjetsFilter = async () => {
-        let idX=idSearched;
-        if(idSearched===''){
-            idX='0';
+        let idX = idSearched;
+        if (idSearched === '') {
+            idX = '0';
         }
         try {
             const response = await fetch(apiUrl + `objets/filter?type=${typeSelected}&id=${idX}`);
@@ -64,10 +95,7 @@ const ListeObjets = () => {
         }
     };
 
-    useEffect(() => {
-        fetchObjets();
 
-    }, []);
     const handleSelectChange = (event: ChangeEvent<HTMLSelectElement>) => {
         setTypeSelected(event.target.value);
     };
@@ -76,12 +104,14 @@ const ListeObjets = () => {
         setIdSearched(event.target.value);
     };
 
-    function closeModalDeleteObjet(){
+    function closeModalDeleteObjet() {
         setShowModalDeleteObjet(false);
     }
-    function findObjectById(array:Array<Objet>, id:number) {
+
+    function findObjectById(array: Array<Objet>, id: number) {
         return array.find(obj => obj.id === id);
     }
+
     const onclickShowModalDeleteObjet = (id: number) => {
         const objetFound = findObjectById(objets, id);
 
@@ -181,7 +211,8 @@ const ListeObjets = () => {
                                         </Link>
                                     </td>
                                     <td>
-                                        <Button variant="danger" onClick={()=>onclickShowModalDeleteObjet(item.id)}>Supprimer</Button>
+                                        <Button variant="danger"
+                                                onClick={() => onclickShowModalDeleteObjet(item.id)}>Supprimer</Button>
                                     </td>
                                 </tr>
 
