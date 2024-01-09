@@ -4,7 +4,7 @@ import {Accessoire, apiUrl, Consommable, Couleur, Objet, Profil} from "./types";
 import {Button, Col, FormControl, FormGroup, Row, Table} from "react-bootstrap";
 import Barcode from "react-barcode";
 import html2canvas from "html2canvas";
-import {generateHeaderDelete, generateHeaderGet} from "./HeadersUtils";
+import {generateHeaderDelete, generateHeaderGet, generateHeaderPut} from "./HeadersUtils";
 
 const DetailObjet = () => {
     const [loading, setLoading] = useState(true);
@@ -132,9 +132,7 @@ const DetailObjet = () => {
 
             const response = await fetch(apiUrl + 'consommables', {
                 method: 'PUT',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
+                headers: generateHeaderPut(),
                 body: JSON.stringify(consommable),
             });
 
@@ -155,9 +153,7 @@ const DetailObjet = () => {
             // Mettez à jour les propriétés nécessaires de l'objet
             const response = await fetch(apiUrl + 'profils', {
                 method: 'PUT',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
+                headers: generateHeaderPut(),
                 body: JSON.stringify(profil),
             });
 
@@ -182,9 +178,7 @@ const DetailObjet = () => {
             // Mettez à jour les propriétés nécessaires de l'objet
             const response = await fetch(apiUrl + 'accessoires', {
                 method: 'PUT',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
+                headers: generateHeaderPut(),
                 body: JSON.stringify(accessoire),
             });
 
@@ -219,9 +213,7 @@ const DetailObjet = () => {
             console.log('old value');
             const response = await fetch(apiUrl + 'profils', {
                 method: 'PUT',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
+                headers: generateHeaderPut(),
                 body: JSON.stringify(updatedProfil),
             });
 
@@ -257,9 +249,7 @@ const DetailObjet = () => {
             console.log('old value');
             const response = await fetch(apiUrl + 'accessoires', {
                 method: 'PUT',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
+                headers: generateHeaderPut(),
                 body: JSON.stringify(updatedAccessoire),
             });
 
@@ -372,10 +362,8 @@ const DetailObjet = () => {
 
     useEffect(() => {
         if (objet) {
-            console.log("objet ----> ");
-            console.log(objet);
             if (objet.type === "CONSOMMABLE") {
-                fetchConsommable(objet.id.toString());
+                setConsommable(objet)
             } else if (objet.type === "PROFIL") {
                 fetchProfil(objet.id.toString());
             } else if (objet.type === "ACCESSOIRE") {

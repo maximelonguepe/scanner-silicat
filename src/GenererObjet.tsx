@@ -5,6 +5,7 @@ import Barcode from "react-barcode";
 import {Link} from "react-router-dom";
 import html2canvas from "html2canvas";
 import Cookies from "js-cookie";
+import {generateHeaderPost} from "./HeadersUtils";
 
 const GenererObjet = () => {
     const [typeSelected, setTypeSelected] = useState('PROFIL');
@@ -96,15 +97,10 @@ const GenererObjet = () => {
     };
 
     const saveProfilFetch = async () => {
-        let token = Cookies.get("token");
-
-        const headers = new Headers();
-        headers.append('Authorization', `Bearer ${token}`);
-        headers.append("Content-Type","application/json")
         try {
             const response = await fetch(apiUrl + "profils", {
                 method: "POST",
-                headers: headers,
+                headers: generateHeaderPost(),
                 body: JSON.stringify(profil)
             });
 
@@ -127,9 +123,7 @@ const GenererObjet = () => {
         try {
             const response = await fetch(apiUrl + "accessoires", {
                 method: "POST",
-                headers: {
-                    "Content-Type": "application/json"
-                },
+                headers: generateHeaderPost(),
                 body: JSON.stringify(accessoire)
             });
 
@@ -153,9 +147,7 @@ const GenererObjet = () => {
         try {
             const response = await fetch(apiUrl + "consommables", {
                 method: "POST",
-                headers: {
-                    "Content-Type": "application/json"
-                },
+                headers: generateHeaderPost(),
                 body: JSON.stringify(consommable)
             });
 

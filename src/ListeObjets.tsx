@@ -33,10 +33,9 @@ const ListeObjets = () => {
             // token = Cookies.get("token");
             // const headers = new Headers();
             //headers.append('Authorization', `Bearer ${token}`);
-            const headers = generateHeaderGet()
             const response = await fetch(apiUrl + 'objets', {
                 method: 'GET',
-                headers: headers
+                headers: generateHeaderGet()
             });
             const jsonData = await response.json();
 
@@ -45,12 +44,6 @@ const ListeObjets = () => {
             console.error('Error fetching data:', error);
         }
     };
-
-
-    const fetchObjetsAxios = async () => {
-        return axios.get(apiUrl + 'objets', {headers: {Authorization: `Bearer ${token}`}});
-    };
-
 
     useEffect(() => {
         const sommeDesPrix = objets.reduce((total, objet) => total + objet.prixUnitaire * objet.quantiteOuMl, 0);
@@ -85,7 +78,10 @@ const ListeObjets = () => {
             idX = '0';
         }
         try {
-            const response = await fetch(apiUrl + `objets/filter?type=${typeSelected}&id=${idX}`);
+            const response = await fetch(apiUrl + `objets/filter?type=${typeSelected}&id=${idX}`, {
+                method: 'GET',
+                headers: generateHeaderGet()
+            });
             const jsonData = await response.json();
 
             setObjets(jsonData);

@@ -11,3 +11,8 @@ export const getTokenFromCookies = () => {
     return token
 }
 
+export const tokenPresentAndValid = () => {
+    console.log("token :::"+isTokenValid(getTokenFromCookies()));
+    return isTokenValid(getTokenFromCookies())
+}
+

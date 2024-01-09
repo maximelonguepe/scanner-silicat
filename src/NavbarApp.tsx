@@ -1,7 +1,12 @@
 import {Nav, Navbar, Container, Button} from "react-bootstrap";
 import {Link} from "react-router-dom";
+import {tokenPresentAndValid} from "./CookiesUtils";
+import {useEffect, useState} from "react";
+
+
 
 const NavbarApp = () => {
+    const [redirectTo, setRedirectTo] = useState("");
     return (
         <>
 
@@ -15,9 +20,9 @@ const NavbarApp = () => {
                     <Navbar.Collapse id="responsive-navbar-nav">
                         <Nav className="ms-auto d-flex">
                             <Nav.Item id="my-events" className="d-flex mb-2 me-2 mb-lg-0">
-                                <Link to='/'>
-                                    <Button>
-                                        Accueil
+                                <Link to={tokenPresentAndValid() ? '/liste' : '/'}>
+                                    <Button variant="success">
+                                        {tokenPresentAndValid() ? 'Inventaire' : 'Connexion'}
                                     </Button>
                                 </Link>
                             </Nav.Item>

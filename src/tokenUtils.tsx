@@ -1,6 +1,6 @@
 import jwt_decode from "jwt-decode";
 
-export const isTokenValid = (token: string) => {
+export const isTokenValid = (token: string |undefined ) => {
     if (token != undefined) {
         // Votre logique pour vérifier la chaîne de caractères
         let decodedToken = jwt_decode(token);
